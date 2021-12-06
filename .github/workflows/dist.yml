@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - "8.0"
+      - "seafile-scripts"
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
