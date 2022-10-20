@@ -468,7 +468,7 @@ urlpatterns = [
     ## user::starred-item
     url(r'^api/v2.1/starred-items/$', StarredItems.as_view(), name='api-v2.1-starred-items'),
 
-    ## user::starred-item
+    ## user::monitored-repos
     url(r'^api/v2.1/monitored-repos/$', MonitoredRepos.as_view(), name='api-v2.1-monitored-repos'),
     url(r'^api/v2.1/monitored-repos/(?P<repo_id>[-0-9a-f]{36})/$', MonitoredRepo.as_view(), name='api-v2.1-monitored-repo'),
 
