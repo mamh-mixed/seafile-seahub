@@ -5,6 +5,7 @@ import { gettext } from '../../utils/constants';
 
 const propTypes = {
   value: PropTypes.string,
+  isDomainItem: PropTypes.bool,
   domainVerified: PropTypes.bool,
   changeValue: PropTypes.func.isRequired,
   displayName: PropTypes.string.isRequired,
@@ -68,6 +69,11 @@ class OrgSamlConfigInput extends Component {
                 </InputGroupAddon>
               }
             </InputGroup>
+            {isDomainItem &&
+              <p className="small text-secondary mt-1">
+                {gettext("By default, the domain is obtained from metadata, and you can also customize the domain, but in any case, you must first verify the ownership of the domain before Single Sign-On.")}
+              </p>
+            }
           </Col>
           <Col md="4">
             {isBtnsShown &&
