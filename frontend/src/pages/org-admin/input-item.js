@@ -53,7 +53,7 @@ class OrgSamlConfigInput extends Component {
 
   render() {
     const { isBtnsShown, value } = this.state;
-    const { displayName } = this.props;
+    const { displayName, isDomainItem } = this.props;
     return (
       <Fragment>
         <Row className="my-4">
