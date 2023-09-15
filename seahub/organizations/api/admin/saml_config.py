@@ -115,7 +115,8 @@ class OrgSAMLConfigView(APIView):
 
         # resource check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        org = ccnet_api.get_org_by_id(org_id)
+        if not org:
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -136,13 +137,14 @@ class OrgSAMLConfigView(APIView):
 
         # resource check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        org = ccnet_api.get_org_by_id(org_id)
+        if not org:
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         saml_config = OrgSAMLConfig.objects.get_config_by_org_id(org_id)
         if not saml_config:
-            error_msg = 'Cannot find a SAML/ADFS config for the organization related to org_id %s.' % org_id
+            error_msg = 'Cannot find a SAML/ADFS config for the organization %s.' % org.org_name
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # When the domain is updated, the domain ownership needs to be re-verified, so set dns_txt to ''
@@ -246,7 +248,7 @@ class OrgVerifyDomain(APIView):
 
         saml_config = OrgSAMLConfig.objects.get_config_by_org_id(org_id)
         if not saml_config:
-            error_msg = 'Cannot find a SAML/ADFS config for the organization related to org_id %s.' % org_id
+            error_msg = 'Cannot find a SAML/ADFS config for the organization %s.' % org.org_name
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         if saml_config.dns_txt:
@@ -277,7 +279,7 @@ class OrgVerifyDomain(APIView):
 
         saml_config = OrgSAMLConfig.objects.get_config_by_org_id(org_id)
         if not saml_config:
-            error_msg = 'Cannot find a SAML/ADFS config for the organization related to org_id %s.' % org_id
+            error_msg = 'Cannot find a SAML/ADFS config for the organization %s.' % org.org_name
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         if not saml_config.dns_txt:
