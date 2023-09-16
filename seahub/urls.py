@@ -956,6 +956,6 @@ if getattr(settings, 'ENABLE_SEADOC', False):
 
 if getattr(settings, 'CLIENT_SSO_VIA_LOCAL_BROWSER', False):
     urlpatterns += [
-        re_path(r'^client-sso/(?P<uuid>[^/]+)/$', client_sso, name="client_sso"),
-        re_path(r'^client-sso/(?P<uuid>[^/]+)/complete/$', client_sso_complete, name="client_sso_complete"),
+        re_path(r'^client-sso/(?P<token>[^/]+)/$', client_sso, name="client_sso"),
+        re_path(r'^client-sso/(?P<token>[^/]+)/complete/$', client_sso_complete, name="client_sso_complete"),
     ]
