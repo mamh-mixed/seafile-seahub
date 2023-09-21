@@ -759,7 +759,7 @@ THIRDPART_WEBSITE_URL = ''
 
 # client sso
 CLIENT_SSO_VIA_LOCAL_BROWSER = False
-CLIENT_SSO_UUID_EXPIRATION = 5 * 60
+CLIENT_SSO_TOKEN_EXPIRATION = 5 * 60
 
 #####################
 # Global AddressBook #
@@ -984,6 +984,9 @@ CONSTANCE_CONFIG = {
 
     'ENABLE_TERMS_AND_CONDITIONS': (ENABLE_TERMS_AND_CONDITIONS, ''),
     'ENABLE_USER_CLEAN_TRASH': (ENABLE_USER_CLEAN_TRASH, ''),
+
+    'CLIENT_SSO_VIA_LOCAL_BROWSER': (CLIENT_SSO_VIA_LOCAL_BROWSER, ''),
+    'CLIENT_SSO_TOKEN_EXPIRATION': (CLIENT_SSO_TOKEN_EXPIRATION, ''),
 }
 
 # if Seafile admin enable remote user authentication in conf/seahub_settings.py
