@@ -36,7 +36,7 @@ from seahub.tags.models import FileUUIDMap
 from seahub.utils.error_msg import file_type_error_msg
 from seahub.utils.repo import parse_repo_perm
 from seahub.utils.file_revisions import get_file_revisions_within_limit
-from seahub.seadoc.models import SeadocHistoryName, SeadocDraft, SeadocRevision, SeadocCommentReply
+from seahub.seadoc.models import SeadocHistoryName, SeadocDraft, SeadocRevision, SeadocCommentReply, SeadocNotification
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.base.templatetags.seahub_tags import email2nickname, \
         email2contact_email
@@ -754,6 +754,48 @@ class SeadocMaskAsDraft(APIView):
         return Response({'success': True})
 
 
+class SeadocNotificationsView(APIView):
+    authentication_classes = (SdocJWTTokenAuthentication, TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, file_uuid):
+        """list notifications
+        """
+        username = request.user.username
+        try:
+            avatar_size = int(request.GET.get('avatar_size', 32))
+        except ValueError:
+            avatar_size = 32
+
+        start = None
+        end = None
+        page = request.GET.get('page', '')
+        if page:
+            try:
+                page = int(request.GET.get('page', '1'))
+                per_page = int(request.GET.get('per_page', '25'))
+            except ValueError:
+                page = 1
+                per_page = 25
+            start = (page - 1) * per_page
+            end = start + per_page
+
+        # resource check
+        total_count = SeadocNotification.objects.total_count(file_uuid, username)
+        notifications = []
+        notification_queryset = SeadocNotification.objects.list_by_user(
+            file_uuid, username, start, end)
+        for notification in notification_queryset:
+            data = notification.to_dict()
+            data.update(
+                user_to_dict(notification.author, request=request, avatar_size=avatar_size))
+            notifications.append(data)
+
+        result = {'notifications': notifications, 'total_count': total_count}
+        return Response(result)
+
+
 class SeadocCommentsView(APIView):
     authentication_classes = ()
     throttle_classes = (UserRateThrottle,)
@@ -787,7 +829,7 @@ class SeadocCommentsView(APIView):
                 page = 1
                 per_page = 25
             start = (page - 1) * per_page
-            end = page * per_page
+            end = start + per_page
 
         total_count = FileComment.objects.list_by_file_uuid(file_uuid).count()
         comments = []
@@ -966,7 +1008,7 @@ class SeadocCommentRepliesView(APIView):
                 page = 1
                 per_page = 25
             start = (page - 1) * per_page
-            end = page * per_page
+            end = start + per_page
 
         # resource check
         file_comment = FileComment.objects.filter(
@@ -1022,9 +1064,35 @@ class SeadocCommentRepliesView(APIView):
             comment_id=comment_id,
             doc_uuid=file_uuid,
         )
+        # notification
+        to_users = set()
+        to_users.add(file_comment.author)
+        reply_queryset = SeadocCommentReply.objects.list_by_comment_id(comment_id)
+        for reply in reply_queryset:
+            to_users.add(reply.author)
+        to_users.discard(username)  # remove author
+        to_users = list(to_users)
+        detail = {
+            'author': username,
+            'comment_id': comment_id,
+            'reply_id': reply.pk,  
+            'reply' : str(reply_content),
+            'msg_type': 'reply',       
+        }
+        for to_user in to_users:
+            SeadocNotification.objects.create(
+                doc_uuid=file_uuid,
+                username=to_user,
+                msg_type='reply',
+                detail=json.dumps(detail),
+            )
+        #
+        notification = detail
+        notification['to_users'] = to_users
         data = reply.to_dict()
         data.update(
             user_to_dict(reply.author, request=request, avatar_size=avatar_size))
+        data['notification'] = notification
         return Response(data)
 
 
@@ -1274,9 +1342,9 @@ class SeadocRevisions(APIView):
             page = 1
             per_page = 25
         start = (page - 1) * per_page
-        limit = page * per_page
+        end = start + per_page
 
-        revisions_queryset= revision_queryset[start:limit]
+        revisions_queryset= revision_queryset[start:end]
         uuid_set = set()
         for item in revisions_queryset:
             uuid_set.add(item.doc_uuid)
