@@ -28,7 +28,7 @@ from seahub.api2.models import TokenV2
 from seahub.utils.ccnet_db import get_ccnet_db_name
 import seahub.settings as settings
 from seahub.settings import SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER, INIT_PASSWD, \
-    SEND_EMAIL_ON_RESETTING_USER_PASSWD
+    SEND_EMAIL_ON_RESETTING_USER_PASSWD, SEND_SHORT_LIVING_PASSWORD_RESET_LINK
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
 from seahub.base.accounts import User
 from seahub.base.models import UserLastLogin
@@ -1484,6 +1484,29 @@ class AdminUserResetPassword(APIView):
             logger.error(e)
             error_msg = 'email invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if IS_EMAIL_CONFIGURED and SEND_SHORT_LIVING_PASSWORD_RESET_LINK:
+
+            from seahub.utils import get_site_name
+            from django.utils.http import int_to_base36
+            from seahub.auth.tokens import default_token_generator
+
+            site_name = get_site_name()
+            contact_email = email2contact_email(user.username)
+            email_template_name = 'sysadmin/short_time_linving_password_reset_link.html'
+            c = {
+                'email': contact_email,
+                'uid': int_to_base36(user.id),
+                'user': user,
+                'token': default_token_generator.make_token(user),
+            }
+
+            send_html_email(_("Reset Password on %s") % site_name,
+                            email_template_name, c, None,
+                            [email2contact_email(user.username)])
+
+            reset_tip = _(f'A password reset link has been sent to {contact_email}.')
+            return Response({'reset_tip': reset_tip})
 
         if isinstance(INIT_PASSWD, FunctionType):
             new_password = INIT_PASSWD()
