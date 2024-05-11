@@ -53,9 +53,6 @@ class Plans extends Component {
     } else if (paymentType === 'add_user') {
       newUserCount = count;
       totalAmount = count * currentPlan.price_per_user;
-    } else if (paymentType === 'buy_quota') {
-      assetQuota = (assetQuotaUnitCount) * currentPlan.asset_quota_unit;
-      totalAmount = assetQuotaUnitCount * currentPlan.price_per_asset_quota_unit;
     } else {
       toaster.danger(gettext('Internal Server Error.'));
       return;
@@ -148,7 +145,7 @@ class Plans extends Component {
             }
             <dd className='order-item'>
               <span className='order-into'>{'可用空间'}</span>
-              <span className='order-value'>{'100GB(附赠)' + (boughtQuota > 0 ? '+' + boughtQuota + 'GB(扩充)' : '')}</span>
+              <span className='order-value'>{ currentPlan.count * 100 +  'GB'}</span>
             </dd>
             <dd className='order-item order-item-bottom rounded-0'>
               <span className='order-into'>{'到期时间'}</span>
@@ -211,59 +208,13 @@ class Plans extends Component {
     );
   };
 
-  renderBuyQuota = () => {
-    let { currentPlan, assetQuotaUnitCount } = this.state;
-    let operationIntro = '新增空间';
-    let originalTotalAmount = assetQuotaUnitCount * currentPlan.price_per_asset_quota_unit;
-    let totalAmount = originalTotalAmount;
-    return (
-      <div className='d-flex flex-column subscription-container price-version-container-header subscription-add-space'>
-        <div className="price-version-container-top"></div>
-        <h3 className='user-quota-plan-name py-5'>{currentPlan.name}</h3>
-        <span className='py-2 mb-0 text-orange font-500 text-center'>
-          {'¥ '}<span className="price-version-plan-price">{currentPlan.asset_quota_price}</span>{' ' + currentPlan.asset_quota_description}
-        </span>
-        <InputGroup style={{marginBottom: '5px'}} className='space-quota'>
-          <InputGroupAddon addonType="prepend">
-            <InputGroupText><span className="font-500">{operationIntro}</span></InputGroupText>
-          </InputGroupAddon>
-          <Input
-            className="py-2"
-            placeholder={operationIntro}
-            title={operationIntro}
-            type="number"
-            value={assetQuotaUnitCount || 1}
-            min="1"
-            max="9999"
-            disabled={!currentPlan.can_custom_asset_quota}
-            onChange={this.onAssetQuotaUnitCountInputChange}
-          />
-          <InputGroupAddon addonType='append'>
-            <InputGroupText><span className="font-500">{' x ' + currentPlan.asset_quota_unit + 'GB'}</span></InputGroupText>
-          </InputGroupAddon>
-        </InputGroup>
-        <span className='py-4 text-orange mb-0 font-500 price-version-plan-whole-price text-center'>
-          {'总价 ¥ ' + totalAmount}
-          {originalTotalAmount !== totalAmount &&
-            <span style={{fontSize: 'small', textDecoration: 'line-through', color: '#9a9a9a'}}>{' ￥' + originalTotalAmount}</span>
-          }
-        </span>
-        <span className='py-2 mb-0 text-lg-size font-500 price-version-plan-valid-day text-center'>{'有效期至 ' + currentPlan.new_term_end}</span>
-        <span className='subscription-notice text-center py-5'>{'注：当有效期剩余天数少于计划中的时候，增加空间的价格按天来计算'}</span>
-        <Button className='subscription-submit' onClick={this.onPay} color="primary">{'立即购买'}</Button>
-      </div>
-    );
-  };
-
   render() {
     let { paymentType } = this.props;
     if (paymentType === 'paid' || paymentType === 'extend_time') {
       return this.renderPaidOrExtendTime();
     } else if (paymentType === 'add_user') {
       return this.renderAddUser();
-    } else if (paymentType === 'buy_quota') {
-      return this.renderBuyQuota();
-    }  else {
+    } else {
       toaster.danger(gettext('Internal Server Error.'));
       return;
     }
@@ -390,7 +341,6 @@ class Subscription extends Component {
       paid: '立即购买',
       extend_time: '立即续费',
       add_user: '增加用户',
-      buy_quota: '增加空间',
     };
     this.state = {
       isLoading: true,
@@ -484,7 +434,7 @@ class Subscription extends Component {
           <div id="product-price" className="subscription-info">
             <h3 className="subscription-info-heading">{'云服务付费方案'}</h3>
             <p className="mb-2">
-              <a rel="noopener noreferrer" target="_blank" href="https://www.seafile.com/product/private_server/">{'查看详情'}</a>
+              <a rel="noopener noreferrer" target="_blank" href="https://www.seafile.com/seafile-docs/home/">{'查看详情'}</a>
             </p>
           </div>
           {paymentTypeList.map((item, index) => {
