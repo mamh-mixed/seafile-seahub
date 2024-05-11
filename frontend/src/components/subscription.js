@@ -4,7 +4,7 @@ import toaster from './toast';
 import { Modal, ModalHeader, ModalBody, ModalFooter, InputGroup, InputGroupAddon, InputGroupText, Input, Button } from 'reactstrap';
 import { gettext, serviceURL } from '../utils/constants';
 import { Utils } from '../utils/utils';
-import { seafileAPI } from '../utils/seafile-api';
+import { subscriptionAPI } from '../utils/subscription-api';
 import Loading from './loading';
 
 import '../css/layout.css';
@@ -39,7 +39,7 @@ class Plans extends Component {
 
   onPay = () => {
     let { paymentType } = this.props;
-    let { currentPlan, assetQuotaUnitCount, count } = this.state;
+    let { currentPlan, count } = this.state;
     let totalAmount, assetQuota, newUserCount;
 
     // parse
@@ -75,27 +75,9 @@ class Plans extends Component {
     this.setState({count: count});
   };
 
-  onAssetQuotaUnitCountInputChange = (e) => {
-    let { currentPlan } = this.state;
-    if (!currentPlan.can_custom_asset_quota) {
-      return;
-    }
-    let count = e.target.value.replace(/^(0+)|[^\d]+/g, '');
-    if (count < 1) {
-      count = 1;
-    } else if (count > 9999) {
-      count = 9999;
-    }
-    this.setState({assetQuotaUnitCount: count});
-  };
-
   renderPaidOrExtendTime = () => {
-    let { plans, paymentType } = this.props;
+    let { plans } = this.props;
     let { currentPlan } = this.state;
-    let boughtQuota = 0;
-    if (paymentType === 'extend_time') {
-      boughtQuota = currentPlan.asset_quota - 100;
-    }
     let totalAmount = currentPlan.total_amount;
     let originalTotalAmount = totalAmount;
     return (
@@ -116,19 +98,6 @@ class Plans extends Component {
             );
           })}
         </dl>
-
-        {paymentType === 'extend_time' && isOrgContext && boughtQuota > 0 &&
-          <Fragment>
-            <span className="subscription-subtitle">{'增加空间'}</span>
-            <dl className='items-dl'>
-              <dd className='order-item order-item-top order-item-bottom subscription-list'>
-                <span className='order-into'>{currentPlan.asset_quota_unit + 'GB x ' + (boughtQuota / currentPlan.asset_quota_unit)}</span>
-                {/* 续费时候需要减去附赠的100GB */}
-                <span className='order-value'>{'￥' + (boughtQuota / currentPlan.asset_quota_unit) * currentPlan.price_per_asset_quota_unit}</span>
-              </dd>
-            </dl>
-          </Fragment>
-        }
 
         <span className="subscription-subtitle">{'方案汇总'}</span>
         <dl className='items-dl'>
@@ -243,7 +212,7 @@ class PlansDialog extends Component {
   }
 
   getPlans = () => {
-    seafileAPI.getSubscriptionPlans(this.props.paymentType).then((res) => {
+    subscriptionAPI.getSubscriptionPlans(this.props.paymentType).then((res) => {
       this.setState({
         planList: res.data.plan_list,
         paymentSourceList: res.data.payment_source_list,
@@ -358,7 +327,7 @@ class Subscription extends Component {
   }
 
   getSubscription = () => {
-    seafileAPI.getSubscription().then((res) => {
+    subscriptionAPI.getSubscription().then((res) => {
       const subscription = res.data.subscription;
       const paymentTypeList = res.data.payment_type_list;
       if (!subscription) {
