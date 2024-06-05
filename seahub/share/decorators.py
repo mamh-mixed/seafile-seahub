@@ -1,4 +1,5 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
+import json
 from django.core.cache import cache
 from django.conf import settings
 from django.shortcuts import render
@@ -12,6 +13,40 @@ from seahub.utils import render_error
 from seahub.utils import normalize_cache_key, is_pro_version, redirect_to_login
 from seahub.constants import REPO_SHARE_LINK_COUNT_LIMIT
 
+
+def _share_link_auth_email_entry(request, fileshare, func, *args, **kwargs):
+    session_key = "link_authed_email_%s" % fileshare.token
+    if request.session.get(session_key) is not None:
+        request.user.username = request.session.get(session_key)
+        return func(request, fileshare, *args, **kwargs)
+    
+    if request.method == 'GET':
+        return render(request, 'share/share_link_audit.html', {'code_verify': False})
+    
+    elif request.method == 'POST':
+        code = request.POST.get('code', '')
+        cache_key = normalize_cache_key(code, 'share_link_email_auth_', token=fileshare.token)
+        email_post = request.POST.get('email', '')
+        email = cache.get(cache_key)
+        
+        authed_details = json.loads(fileshare.authed_details)
+        if email == email_post and email in authed_details.get('authed_emails'):
+            request.session[session_key] = email
+            request.user.username = request.session.get(session_key)
+            cache.delete(cache_key)
+            return func(request, fileshare, *args, **kwargs)
+        else:
+            return render(request, 'share/share_link_audit.html', {
+                'err_msg': 'Invalid token, please try again.',
+                'email': email,
+                'code': code,
+                'token': fileshare.token,
+                'code_verify': False
+                
+            })
+    else:
+        assert False, 'TODO'
+    
 
 def share_link_audit(func):
 
@@ -36,6 +71,9 @@ def share_link_audit(func):
         if fileshare.is_expired():
             return render_error(request, _('Link is expired.'))
 
+        if fileshare.user_scope == 'specific_emails':
+            return _share_link_auth_email_entry(request, fileshare, func, *args, **kwargs)
+
         if not is_pro_version() or not settings.ENABLE_SHARE_LINK_AUDIT:
             return func(request, fileshare, *args, **kwargs)
 
@@ -47,10 +85,12 @@ def share_link_audit(func):
         if request.session.get('anonymous_email') is not None:
             request.user.username = request.session.get('anonymous_email')
             return func(request, fileshare, *args, **kwargs)
+        
 
         if request.method == 'GET':
             return render(request, 'share/share_link_audit.html', {
                 'token': token,
+                'code_verify': True
             })
         elif request.method == 'POST':
 
@@ -71,6 +111,7 @@ def share_link_audit(func):
                     'email': email,
                     'code': code,
                     'token': token,
+                    'code_verify': True
                 })
         else:
             assert False, 'TODO'

@@ -2,6 +2,7 @@
 import os
 import stat
 import logging
+import json
 
 import dateutil.parser
 from dateutil.relativedelta import relativedelta
@@ -17,16 +18,17 @@ from django.utils.translation import gettext as _
 
 from seaserv import seafile_api, ccnet_api
 
-from seahub.api2.utils import api_error
+from seahub.api2.utils import api_error, send_share_link_emails_with_code
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.permissions import CanGenerateShareLink
+from seahub.base.accounts import User
 from seahub.constants import PERMISSION_READ_WRITE, PERMISSION_READ, PERMISSION_PREVIEW_EDIT, PERMISSION_PREVIEW, PERMISSION_INVISIBLE
 from seahub.share.models import FileShare
 from seahub.share.decorators import check_share_link_count
-from seahub.share.utils import is_repo_admin
+from seahub.share.utils import is_repo_admin, VALID_SHARE_LINK_SCOPE, SCOPE_SPECIFIC_EMAILS, SCOPE_SPECIFIC_USERS
 from seahub.utils import is_org_context, get_password_strength_level, \
-    is_valid_password, gen_shared_link, is_pro_version
+    is_valid_password, gen_shared_link, is_pro_version, is_valid_email
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.utils.repo import parse_repo_perm
 from seahub.settings import SHARE_LINK_EXPIRE_DAYS_MAX, SHARE_LINK_EXPIRE_DAYS_MIN, SHARE_LINK_EXPIRE_DAYS_DEFAULT, \
@@ -255,6 +257,37 @@ class MultiShareLinks(APIView):
                                                    password, expire_date,
                                                    permission=perm, org_id=org_id)
 
+        user_scope = request.data.get('user_scope', '')
+        emails_list = []
+        if user_scope and user_scope in VALID_SHARE_LINK_SCOPE:
+            if user_scope == SCOPE_SPECIFIC_USERS:
+        
+                emails = request.data.get('emails', [])
+                emails_to_add = []
+        
+                for username in emails:
+                    try:
+                        User.objects.get(email=username)
+                    except User.DoesNotExist:
+                        continue
+                    emails_to_add.append(username)
+        
+                fs.authed_details = json.dumps(
+                    {'authed_users': emails_to_add}
+                )
+            elif user_scope == SCOPE_SPECIFIC_EMAILS:
+                emails_str = request.data.get('emails', '')
+                emails_list = [e.strip() for e in emails_str.split(';')]
+                emails_list = [e for e in emails_list if is_valid_email(e)]
+                fs.authed_details = json.dumps(
+                    {'authed_emails': emails_list}
+                )
+    
+            fs.user_scope = user_scope
+            fs.save()
+        if emails_list:
+            send_share_link_emails_with_code(emails_list, fs)
+        
         link_info = get_share_link_info(fs)
         return Response(link_info)
 

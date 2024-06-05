@@ -3,6 +3,7 @@
 from functools import partial
 import os
 import re
+import json
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -15,6 +16,7 @@ import mimetypes
 import contextlib
 from datetime import datetime
 from urllib.parse import urlparse, urljoin
+
 
 from constance import config
 import seaserv
@@ -36,6 +38,7 @@ from seahub.api2.models import Token, TokenV2
 import seahub.settings
 from seahub.settings import MEDIA_URL, LOGO_PATH, \
         MEDIA_ROOT, CUSTOM_LOGO_PATH
+
 try:
     from seahub.settings import EVENTS_CONFIG_FILE
 except ImportError:

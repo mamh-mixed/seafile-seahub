@@ -19,6 +19,7 @@ from seahub.options.models import UserOptions, CryptoOptionNotSetError
 from seahub.share.decorators import share_link_audit, share_link_login_required
 from seahub.share.models import FileShare, UploadLinkShare, \
     check_share_link_common
+from seahub.share.utils import check_share_link_user_access
 from seahub.views import gen_path_link, get_repo_dirents, \
     check_folder_permission
 
@@ -252,6 +253,10 @@ def view_lib_as_wiki(request, repo_id, path):
 def view_shared_dir(request, fileshare):
 
     token = fileshare.token
+    
+    if not check_share_link_user_access(fileshare, request.user.username):
+        error_msg = _('Permission denied')
+        return render_error(request, error_msg)
 
     password_check_passed, err_msg = check_share_link_common(request, fileshare)
     if not password_check_passed:
