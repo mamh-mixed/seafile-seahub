@@ -346,7 +346,7 @@ class FileShare(models.Model):
                                   default=PERM_VIEW_DL)
 
     user_scope = models.CharField(max_length=255, default='all_users')
-    authed_details = models.TextField()
+    authed_details = models.TextField(default='')
 
     objects = FileShareManager()
 
