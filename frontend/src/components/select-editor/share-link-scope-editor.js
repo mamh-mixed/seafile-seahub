@@ -30,7 +30,7 @@ class ShareLinkScopeEditor extends React.Component {
   render() {
     let scopeOptions = ['all_users', 'specific_users'];
     if (isEmailConfigured) {
-      scopeOptions.push('specific_emails')
+      scopeOptions.push('specific_emails');
     }
     return (
       <SelectEditor

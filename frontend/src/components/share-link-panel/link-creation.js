@@ -389,14 +389,14 @@ class LinkCreation extends React.Component {
                   {gettext('Specific users in the team')}
                 </Label>
               </FormGroup>
-                {isEmailConfigured && (
-                  <FormGroup check className="ml-4">
-                    <Label check>
-                      <Input type="radio" name='scope' value = {'specific_emails'} checked={this.state.currentScope === 'specific_emails'} onChange={this.setScope} className="mr-1" />
-                      {gettext('Specific people with email address')}
-                    </Label>
-                  </FormGroup>
-                )}
+              {isEmailConfigured && (
+                <FormGroup check className="ml-4">
+                  <Label check>
+                    <Input type="radio" name='scope' value = {'specific_emails'} checked={this.state.currentScope === 'specific_emails'} onChange={this.setScope} className="mr-1" />
+                    {gettext('Specific people with email address')}
+                  </Label>
+                </FormGroup>
+              )}
               {this.state.currentScope === 'specific_users' &&
                 <div className="ml-4" style={{marginBottom:'50px'}}>
                   <UserSelect
