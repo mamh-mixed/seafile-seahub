@@ -25,7 +25,7 @@ from seahub.views import gen_path_link, get_repo_dirents, \
 
 from seahub.utils import gen_dir_share_link, \
     gen_shared_upload_link, render_error, \
-    get_file_type_and_ext, get_service_url, normalize_dir_path
+    get_file_type_and_ext, get_service_url, normalize_dir_path, redirect_to_login
 from seahub.utils.repo import is_repo_owner, get_repo_owner
 from seahub.settings import ENABLE_UPLOAD_FOLDER, \
     ENABLE_RESUMABLE_FILEUPLOAD, ENABLE_VIDEO_THUMBNAIL, \
@@ -253,8 +253,9 @@ def view_lib_as_wiki(request, repo_id, path):
 def view_shared_dir(request, fileshare):
 
     token = fileshare.token
-    
     if not check_share_link_user_access(fileshare, request.user.username):
+        if not request.user.username:
+            return redirect_to_login(request)
         error_msg = _('Permission denied')
         return render_error(request, error_msg)
 

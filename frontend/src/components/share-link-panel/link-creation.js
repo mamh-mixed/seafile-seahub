@@ -373,7 +373,7 @@ class LinkCreation extends React.Component {
             </FormGroup>
           )}
           {type !== 'batch' && (
-            <>
+            <FormGroup check>
               <Label check>
                 <span>{'Set scope'}</span>
               </Label>
@@ -413,7 +413,7 @@ class LinkCreation extends React.Component {
                   <input type="text" className="form-control" value={this.state.inputEmails} onChange={this.handleInputChange} />
                 </div>
               }
-            </>
+            </FormGroup>
           )}
           {this.state.errorInfo && <Alert color="danger" className="mt-2">{gettext(this.state.errorInfo)}</Alert>}
           <Button onClick={this.generateShareLink} className="mt-2 ml-1 mb-1">{gettext('Generate')}</Button>

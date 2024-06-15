@@ -57,7 +57,7 @@ from seahub.utils import render_error, is_org_context, \
     generate_file_audit_event_type, FILE_AUDIT_ENABLED, \
     get_conf_text_ext, HAS_OFFICE_CONVERTER, PREVIEW_FILEEXT, \
     normalize_file_path, get_service_url, OFFICE_PREVIEW_MAX_SIZE, \
-    normalize_cache_key
+    normalize_cache_key, redirect_to_login
 from seahub.utils.ip import get_remote_ip
 from seahub.utils.timeutils import utc_to_local
 from seahub.utils.file_types import (IMAGE, PDF, SVG,
@@ -1161,8 +1161,9 @@ def view_shared_file(request, fileshare):
     """
 
     token = fileshare.token
-
     if not check_share_link_user_access(fileshare, request.user.username):
+        if not request.user.username:
+            return redirect_to_login(request)
         error_msg = _('Permission denied')
         return render_error(request, error_msg)
 
@@ -1396,6 +1397,8 @@ def view_file_via_shared_dir(request, fileshare):
     token = fileshare.token
     
     if not check_share_link_user_access(fileshare, request.user.username):
+        if not request.user.username:
+            return redirect_to_login(request)
         error_msg = _('Permission denied')
         return render_error(request, error_msg)
 
