@@ -57,7 +57,7 @@ from seahub.utils import render_error, is_org_context, \
     generate_file_audit_event_type, FILE_AUDIT_ENABLED, \
     get_conf_text_ext, HAS_OFFICE_CONVERTER, PREVIEW_FILEEXT, \
     normalize_file_path, get_service_url, OFFICE_PREVIEW_MAX_SIZE, \
-    normalize_cache_key, redirect_to_login
+    normalize_cache_key
 from seahub.utils.ip import get_remote_ip
 from seahub.utils.timeutils import utc_to_local
 from seahub.utils.file_types import (IMAGE, PDF, SVG,
@@ -1159,7 +1159,7 @@ def view_shared_file(request, fileshare):
     Download share file if `dl` in request param.
     View raw share file if `raw` in request param.
     """
-
+    from seahub.utils import redirect_to_login
     token = fileshare.token
     if not check_share_link_user_access(fileshare, request.user.username):
         if not request.user.username:
@@ -1393,7 +1393,7 @@ def view_shared_file(request, fileshare):
 @share_link_audit
 @share_link_login_required
 def view_file_via_shared_dir(request, fileshare):
-
+    from seahub.utils import redirect_to_login
     token = fileshare.token
     
     if not check_share_link_user_access(fileshare, request.user.username):
