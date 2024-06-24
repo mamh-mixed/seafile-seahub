@@ -72,6 +72,8 @@ def share_link_audit(func):
             return render_error(request, _('Link is expired.'))
 
         if fileshare.user_scope == 'specific_emails':
+            if request.user.username == fileshare.username:
+                return func(request, fileshare, *args, **kwargs)
             return _share_link_auth_email_entry(request, fileshare, func, *args, **kwargs)
 
         
