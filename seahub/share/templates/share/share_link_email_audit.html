@@ -64,6 +64,9 @@ $('#get-code').on('click', function() {
         error: function(xhr) {
             var error_msg = prepareAjaxErrorMsg(xhr);
             $('.error', $this.closest('form')).html(error_msg).removeClass('hide');
+            $this.prop('disabled', false).removeClass('btn-disabled')
+                 .text(originalText); // reset to original text
+            clearInterval(interval);
         }
     });
 });

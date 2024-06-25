@@ -39,7 +39,7 @@ def _share_link_auth_email_entry(request, fileshare, func, *args, **kwargs):
         else:
             return render(request, 'share/share_link_email_audit.html', {
                 'err_msg': 'Invalid token, please try again.',
-                'email': email,
+                'email': email_post,
                 'code': code,
                 'token': fileshare.token,
                 'code_verify': False
