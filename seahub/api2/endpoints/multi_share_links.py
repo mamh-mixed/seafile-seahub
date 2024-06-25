@@ -23,6 +23,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.permissions import CanGenerateShareLink
 from seahub.base.accounts import User
+from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.constants import PERMISSION_READ_WRITE, PERMISSION_READ, PERMISSION_PREVIEW_EDIT, PERMISSION_PREVIEW, PERMISSION_INVISIBLE
 from seahub.share.models import FileShare
 from seahub.share.decorators import check_share_link_count
@@ -286,7 +287,8 @@ class MultiShareLinks(APIView):
             fs.user_scope = user_scope
             fs.save()
         if emails_list:
-            send_share_link_emails_with_code(emails_list, fs)
+            shared_from = email2nickname(username)
+            send_share_link_emails_with_code(emails_list, fs, shared_from)
         
         link_info = get_share_link_info(fs)
         return Response(link_info)

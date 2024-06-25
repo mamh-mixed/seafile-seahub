@@ -21,7 +21,8 @@ def _share_link_auth_email_entry(request, fileshare, func, *args, **kwargs):
         return func(request, fileshare, *args, **kwargs)
     
     if request.method == 'GET':
-        return render(request, 'share/share_link_audit.html', {'code_verify': False})
+        email = request.GET.get('email')
+        return render(request, 'share/share_link_email_audit.html', {'email': email, 'token': fileshare.token})
     
     elif request.method == 'POST':
         code = request.POST.get('code', '')
@@ -36,7 +37,7 @@ def _share_link_auth_email_entry(request, fileshare, func, *args, **kwargs):
             cache.delete(cache_key)
             return func(request, fileshare, *args, **kwargs)
         else:
-            return render(request, 'share/share_link_audit.html', {
+            return render(request, 'share/share_link_email_audit.html', {
                 'err_msg': 'Invalid token, please try again.',
                 'email': email,
                 'code': code,
@@ -85,6 +86,70 @@ def share_link_audit(func):
         if request.session.get('anonymous_email') is not None:
             request.user.username = request.session.get('anonymous_email')
             return func(request, fileshare, *args, **kwargs)
+
+    return _decorated
+
+def uplodad_link_audit(func):
+
+    def _decorated(request, token, *args, **kwargs):
+
+        assert token is not None    # Checked by URLconf
+
+        try:
+            fileshare = FileShare.objects.get(token=token)
+        except FileShare.DoesNotExist:
+            fileshare = None
+
+        if not fileshare:
+            try:
+                fileshare = UploadLinkShare.objects.get(token=token)
+            except UploadLinkShare.DoesNotExist:
+                fileshare = None
+
+        if not fileshare:
+            return render_error(request, _('Link does not exist.'))
+
+        if fileshare.is_expired():
+            return render_error(request, _('Link is expired.'))
+
+        if not is_pro_version() or not settings.ENABLE_SHARE_LINK_AUDIT:
+            return func(request, fileshare, *args, **kwargs)
+
+        # no audit for authenticated user, since we've already got email address
+        if request.user.is_authenticated:
+            return func(request, fileshare, *args, **kwargs)
+
+        # anonymous user
+        if request.session.get('anonymous_email') is not None:
+            request.user.username = request.session.get('anonymous_email')
+            return func(request, fileshare, *args, **kwargs)
+
+        if request.method == 'GET':
+            return render(request, 'share/share_link_audit.html', {
+                'token': token,
+            })
+        elif request.method == 'POST':
+
+            code = request.POST.get('code', '')
+            email = request.POST.get('email', '')
+
+            cache_key = normalize_cache_key(email, 'share_link_audit_')
+            if code == cache.get(cache_key):
+                # code is correct, add this email to session so that he will
+                # not be asked again during this session, and clear this code.
+                request.session['anonymous_email'] = email
+                request.user.username = request.session.get('anonymous_email')
+                cache.delete(cache_key)
+                return func(request, fileshare, *args, **kwargs)
+            else:
+                return render(request, 'share/share_link_audit.html', {
+                    'err_msg': 'Invalid token, please try again.',
+                    'email': email,
+                    'code': code,
+                    'token': token,
+                })
+        else:
+            assert False, 'TODO'
 
     return _decorated
 

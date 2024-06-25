@@ -284,14 +284,10 @@ def is_web_request(request):
         return False
     
     
-def send_share_link_emails_with_code(emails, fs):
+def send_share_link_emails_with_code(emails, fs, shared_from):
     subject = "Verification code for visiting share links"
     for email in emails:
-        code = gen_token(max_length=6)
-        cache_key = normalize_cache_key(code, 'share_link_email_auth_', token=fs.token)
-        cache.set(cache_key, email, 60 * 60 * 24)
-        c = {'code': code, 'url': fs.get_full_url()}
-
+        c = {'url': "%s?email=%s" % (fs.get_full_url(), email), 'shared_from': shared_from}
         send_success = send_html_email_with_dj_template(
             email,
             subject=subject,

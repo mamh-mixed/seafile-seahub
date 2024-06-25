@@ -293,7 +293,8 @@ class ShareLinkEmailAuthView(APIView):
             file_share.save()
 
             if new_auth_infos:
-                send_share_link_emails_with_code(new_auth_infos, file_share)
+                shared_from = email2nickname(request.user.username)
+                send_share_link_emails_with_code(new_auth_infos, file_share, shared_from)
 
 
         except Exception as e:

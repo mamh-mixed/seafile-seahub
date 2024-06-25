@@ -50,7 +50,7 @@ $('#get-code').on('click', function() {
     }, 1000);
 
     $.ajax({
-        url: "{% url "ajax_get_link_audit_code" %}",
+        url: "{% url "ajax_get_link_email_audit_code" %}",
         type: 'POST',
         cache: false,
         beforeSend: prepareCSRFToken,
