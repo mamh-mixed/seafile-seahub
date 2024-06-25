@@ -70,6 +70,11 @@ def share_link_audit(func):
 
         if not fileshare:
             return render_error(request, _('Link does not exist.'))
+        
+        print(fileshare.user_scope, 'ssssssssccccccccccc')
+        
+        if (not is_for_upload) and fileshare.user_scope == 'all_users':
+            return func(request, fileshare, *args, **kwargs)
 
         if fileshare.is_expired():
             return render_error(request, _('Link is expired.'))
