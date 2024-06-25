@@ -177,11 +177,11 @@ class LinkDetails extends React.Component {
   };
 
   onUserAuth  = () => {
-    this.props.setMode('linkUserAuth');
+    this.props.setMode('linkUserAuth', this.state.sharedLinkInfo);
   };
 
   onEmailAuth  = () => {
-    this.props.setMode('linkEmailAuth');
+    this.props.setMode('linkEmailAuth', this.state.sharedLinkInfo);
   };
 
 

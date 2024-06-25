@@ -15,6 +15,9 @@ from seahub.constants import REPO_SHARE_LINK_COUNT_LIMIT
 
 
 def _share_link_auth_email_entry(request, fileshare, func, *args, **kwargs):
+    if request.user.username == fileshare.username:
+        return func(request, fileshare, *args, **kwargs)
+    
     session_key = "link_authed_email_%s" % fileshare.token
     if request.session.get(session_key) is not None:
         request.user.username = request.session.get(session_key)
@@ -47,7 +50,7 @@ def _share_link_auth_email_entry(request, fileshare, func, *args, **kwargs):
             })
     else:
         assert False, 'TODO'
-    
+
 
 def share_link_audit(func):
 
@@ -70,23 +73,14 @@ def share_link_audit(func):
 
         if not fileshare:
             return render_error(request, _('Link does not exist.'))
-        
-        print(fileshare.user_scope, 'ssssssssccccccccccc')
-        
-        if (not is_for_upload) and fileshare.user_scope == 'all_users':
-            return func(request, fileshare, *args, **kwargs)
-
+            
         if fileshare.is_expired():
             return render_error(request, _('Link is expired.'))
 
         if (not is_for_upload) and fileshare.user_scope == 'specific_emails':
-            if request.user.username == fileshare.username:
-                return func(request, fileshare, *args, **kwargs)
             return _share_link_auth_email_entry(request, fileshare, func, *args, **kwargs)
-
-        # no audit for authenticated user, since we've already got email address
-        if request.user.is_authenticated:
-            return func(request, fileshare, *args, **kwargs)
+        
+        return func(request, fileshare, *args, **kwargs)
 
     return _decorated
 

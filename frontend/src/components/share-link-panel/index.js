@@ -166,8 +166,11 @@ class ShareLinkPanel extends React.Component {
     }
   };
 
-  setMode = (mode) => {
-    this.setState({ mode: mode });
+  setMode = (mode, link=null) => {
+    this.setState({ mode: mode});
+    if (link) {
+      this.setState({sharedLinkInfo: link});
+    }
   };
 
   toggleSelectAllLinks = (isSelected) => {
