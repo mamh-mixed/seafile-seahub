@@ -284,14 +284,14 @@ def is_web_request(request):
         return False
     
     
-def send_share_link_emails_with_code(emails, fs, shared_from):
-    subject = "Verification code for visiting share links"
+def send_share_link_emails(emails, fs, shared_from):
+    subject = "Share links"
     for email in emails:
         c = {'url': "%s?email=%s" % (fs.get_full_url(), email), 'shared_from': shared_from}
         send_success = send_html_email_with_dj_template(
             email,
             subject=subject,
-            dj_template='share/audit_code_link_email.html',
+            dj_template='share/share_link_email.html',
             context=c)
         if not send_success:
             logger.error('Failed to send code via email to %s' % email)

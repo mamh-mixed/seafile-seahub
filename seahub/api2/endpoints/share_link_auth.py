@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from seahub.api2.utils import api_error, send_share_link_emails_with_code
+from seahub.api2.utils import api_error, send_share_link_emails
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.permissions import CanGenerateShareLink
@@ -15,7 +15,7 @@ from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_e
 from seahub.share.models import FileShare
 from seahub.share.utils import SCOPE_SPECIFIC_USERS, SCOPE_SPECIFIC_EMAILS
 from seahub.utils.repo import parse_repo_perm
-from seahub.utils import IS_EMAIL_CONFIGURED
+from seahub.utils import IS_EMAIL_CONFIGURED, string2list, is_valid_email
 from seaserv import seafile_api
 
 
@@ -271,8 +271,9 @@ class ShareLinkEmailAuthView(APIView):
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
 
-            email_list_str = request.data.get('emails', '')
-            email_list = [e.strip() for e in email_list_str.split(';')]
+            email_str = request.data.get('emails', '')
+            email_list = string2list(email_str)
+            email_list = [e for e in email_list if is_valid_email(e)]
             try:
                 authed_details = json.loads(file_share.authed_details)
             except:
@@ -283,8 +284,6 @@ class ShareLinkEmailAuthView(APIView):
             for email in email_list:
                 if email in exist_emails:
                     continue
-                
-
                 email_auth_infos.append(email)
                 new_auth_infos.append(email)
             
@@ -294,7 +293,7 @@ class ShareLinkEmailAuthView(APIView):
 
             if new_auth_infos:
                 shared_from = email2nickname(request.user.username)
-                send_share_link_emails_with_code(new_auth_infos, file_share, shared_from)
+                send_share_link_emails(new_auth_infos, file_share, shared_from)
 
 
         except Exception as e:

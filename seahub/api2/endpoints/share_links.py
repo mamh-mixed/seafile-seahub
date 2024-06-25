@@ -24,7 +24,7 @@ from urllib.parse import quote
 from seaserv import seafile_api
 from pysearpc import SearpcError
 
-from seahub.api2.utils import api_error, send_share_link_emails_with_code
+from seahub.api2.utils import api_error, send_share_link_emails
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.permissions import CanGenerateShareLink, IsProVersion
@@ -520,7 +520,7 @@ class ShareLinks(APIView):
             fs.save()
         if emails_list:
             shared_from = email2nickname(username)
-            send_share_link_emails_with_code(emails_list, fs, shared_from)
+            send_share_link_emails(emails_list, fs, shared_from)
         link_info = get_share_link_info(fs)
         return Response(link_info)
 

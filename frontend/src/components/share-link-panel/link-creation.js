@@ -410,7 +410,7 @@ class LinkCreation extends React.Component {
               }
               {this.state.currentScope === 'specific_emails' &&
                 <div className="ml-4" style={{marginBottom:'50px'}}>
-                  <input type="text" className="form-control" value={this.state.inputEmails} onChange={this.handleInputChange} />
+                  <input type="text" className="form-control" value={this.state.inputEmails} onChange={this.handleInputChange} placeholder={gettext('Emails, separated by \',\'')}/>
                 </div>
               }
             </FormGroup>

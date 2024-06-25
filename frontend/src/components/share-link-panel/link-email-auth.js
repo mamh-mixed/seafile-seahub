@@ -183,7 +183,7 @@ class LinkEmailAuth extends React.Component {
           <tbody>
             <tr>
               <td width="82%">
-                <input type="text" className="form-control" value={inputEmails} onChange={this.handleInputChange} />
+                <input type="text" className="form-control" value={inputEmails} onChange={this.handleInputChange} placeholder={gettext('Emails, separated by \',\'')}/>
               </td>
               <td width="18%">
                 <Button onClick={this.addLinkAuthUsers}>{gettext('Submit')}</Button>

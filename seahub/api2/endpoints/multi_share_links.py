@@ -18,7 +18,7 @@ from django.utils.translation import gettext as _
 
 from seaserv import seafile_api, ccnet_api
 
-from seahub.api2.utils import api_error, send_share_link_emails_with_code
+from seahub.api2.utils import api_error, send_share_link_emails
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.permissions import CanGenerateShareLink
@@ -29,7 +29,7 @@ from seahub.share.models import FileShare
 from seahub.share.decorators import check_share_link_count
 from seahub.share.utils import is_repo_admin, VALID_SHARE_LINK_SCOPE, SCOPE_SPECIFIC_EMAILS, SCOPE_SPECIFIC_USERS
 from seahub.utils import is_org_context, get_password_strength_level, \
-    is_valid_password, gen_shared_link, is_pro_version, is_valid_email
+    is_valid_password, gen_shared_link, is_pro_version, is_valid_email, string2list
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.utils.repo import parse_repo_perm
 from seahub.settings import SHARE_LINK_EXPIRE_DAYS_MAX, SHARE_LINK_EXPIRE_DAYS_MIN, SHARE_LINK_EXPIRE_DAYS_DEFAULT, \
@@ -278,7 +278,7 @@ class MultiShareLinks(APIView):
                 )
             elif user_scope == SCOPE_SPECIFIC_EMAILS:
                 emails_str = request.data.get('emails', '')
-                emails_list = [e.strip() for e in emails_str.split(';')]
+                emails_list = string2list(emails_str)
                 emails_list = [e for e in emails_list if is_valid_email(e)]
                 fs.authed_details = json.dumps(
                     {'authed_emails': emails_list}
@@ -288,7 +288,7 @@ class MultiShareLinks(APIView):
             fs.save()
         if emails_list:
             shared_from = email2nickname(username)
-            send_share_link_emails_with_code(emails_list, fs, shared_from)
+            send_share_link_emails(emails_list, fs, shared_from)
         
         link_info = get_share_link_info(fs)
         return Response(link_info)
