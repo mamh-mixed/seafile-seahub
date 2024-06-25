@@ -16,7 +16,7 @@ from seaserv import seafile_api
 
 from seahub.auth.decorators import login_required
 from seahub.options.models import UserOptions, CryptoOptionNotSetError
-from seahub.share.decorators import share_link_audit, share_link_login_required, uplodad_link_audit
+from seahub.share.decorators import share_link_audit, share_link_login_required
 from seahub.share.models import FileShare, UploadLinkShare, \
     check_share_link_common
 from seahub.share.utils import check_share_link_user_access
@@ -373,7 +373,7 @@ def view_shared_dir(request, fileshare):
             })
 
 
-@uplodad_link_audit
+@share_link_audit
 def view_shared_upload_link(request, uploadlink):
     token = uploadlink.token
 
