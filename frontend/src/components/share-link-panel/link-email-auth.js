@@ -6,7 +6,7 @@ import { Utils } from '../../utils/utils';
 import '../../css/invitations.css';
 
 import '../../css/share-to-user.css';
-import { customAPI } from '../../utils/custom-api';
+import { shareLinkAPI } from '../../utils/share-link-api';
 
 class EmailItem extends React.Component {
 
@@ -116,7 +116,7 @@ class LinkEmailAuth extends React.Component {
 
   listLinkAuthUsers = () => {
     const { linkToken, path } = this.props;
-    customAPI.listShareLinkAuthEmails(linkToken, path).then(res => {
+    shareLinkAPI.listShareLinkAuthEmails(linkToken, path).then(res => {
       this.setState({authEmails: res.data.auth_list});
     });
   };
@@ -124,7 +124,7 @@ class LinkEmailAuth extends React.Component {
   addLinkAuthUsers = () => {
     const { linkToken, path } = this.props;
     const { inputEmails } = this.state;
-    customAPI.addShareLinkAuthEmails(linkToken, inputEmails, path).then(res => {
+    shareLinkAPI.addShareLinkAuthEmails(linkToken, inputEmails, path).then(res => {
       let authEmails = this.state.authEmails;
       let newAuthUsers = [...authEmails, ...res.data.auth_list];
       this.setState({
@@ -138,7 +138,7 @@ class LinkEmailAuth extends React.Component {
   deleteItem = (email) => {
     const { linkToken, path } = this.props;
     let emails = [email, ];
-    customAPI.deleteShareLinkAuthEmails(linkToken, emails, path).then(res => {
+    shareLinkAPI.deleteShareLinkAuthEmails(linkToken, emails, path).then(res => {
       let authEmails = this.state.authEmails.filter(e => {
         return e !== email;
       });

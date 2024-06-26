@@ -14,7 +14,7 @@ import SendLink from '../send-link';
 import SharedLink from '../shared-link';
 import SetLinkExpiration from '../set-link-expiration';
 import ShareLinkScopeEditor from '../select-editor/share-link-scope-editor';
-import { customAPI } from '../../utils/custom-api';
+import { shareLinkAPI } from '../../utils/share-link-api';
 
 const propTypes = {
   sharedLinkInfo: PropTypes.object.isRequired,
@@ -165,7 +165,7 @@ class LinkDetails extends React.Component {
   };
 
   changeScope = (scope) => {
-    customAPI.updateShareLinkScope(this.props.sharedLinkInfo.token, scope).then((res) => {
+    shareLinkAPI.updateShareLinkScope(this.props.sharedLinkInfo.token, scope).then((res) => {
       let sharedLinkInfo = new ShareLink(res.data);
       this.setState({sharedLinkInfo: sharedLinkInfo, currentScope: sharedLinkInfo.user_scope});
       let message = gettext('Success');

@@ -7,7 +7,7 @@ import UserSelect from '../user-select';
 import '../../css/invitations.css';
 
 import '../../css/share-to-user.css';
-import { customAPI } from '../../utils/custom-api';
+import { shareLinkAPI } from '../../utils/share-link-api';
 
 class UserItem extends React.Component {
 
@@ -124,7 +124,7 @@ class LinkUserAuth extends React.Component {
 
   listLinkAuthUsers = () => {
     const { linkToken, path } = this.props;
-    customAPI.listShareLinkAuthUsers(linkToken, path).then(res => {
+    shareLinkAPI.listShareLinkAuthUsers(linkToken, path).then(res => {
       this.setState({authUsers: res.data.auth_list});
     });
   };
@@ -136,7 +136,7 @@ class LinkUserAuth extends React.Component {
       return false;
     }
     const users = selectedOption.map((item, index) => item.email);
-    customAPI.addShareLinkAuthUsers(linkToken, users, path).then(res => {
+    shareLinkAPI.addShareLinkAuthUsers(linkToken, users, path).then(res => {
       let authUsers = this.state.authUsers;
       let newAuthUsers = [...authUsers, ...res.data.auth_list];
       this.setState({
@@ -150,7 +150,7 @@ class LinkUserAuth extends React.Component {
   deleteItem = (username) => {
     const { linkToken, path } = this.props;
     let users = [username, ];
-    customAPI.deleteShareLinkAuthUsers(linkToken, users, path).then(res => {
+    shareLinkAPI.deleteShareLinkAuthUsers(linkToken, users, path).then(res => {
       let authUsers = this.state.authUsers.filter(user => {
         return user.username !== username;
       });
