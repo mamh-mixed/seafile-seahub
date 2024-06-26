@@ -9,6 +9,7 @@ from rest_framework import status
 
 from seahub.api2.utils import api_error
 from seahub.share.models import FileShare, UploadLinkShare
+from seahub.share.utils import SCOPE_SPECIFIC_EMAILS, SCOPE_ALL_USERS, SCOPE_SPECIFIC_USERS
 from seahub.utils import render_error
 from seahub.utils import normalize_cache_key, is_pro_version, redirect_to_login
 from seahub.constants import REPO_SHARE_LINK_COUNT_LIMIT
@@ -70,18 +71,22 @@ def share_link_audit(func):
                 is_for_upload = True
             except UploadLinkShare.DoesNotExist:
                 fileshare = None
-
+                
         if not fileshare:
             return render_error(request, _('Link does not exist.'))
             
         if fileshare.is_expired():
             return render_error(request, _('Link is expired.'))
+        
+        if is_for_upload:
+            return func(request, fileshare, *args, **kwargs)
+        
+        if fileshare.user_scope in [SCOPE_ALL_USERS, SCOPE_SPECIFIC_USERS]:
+            return func(request, fileshare, *args, **kwargs)
 
-        if (not is_for_upload) and fileshare.user_scope == 'specific_emails':
+        if fileshare.user_scope == SCOPE_SPECIFIC_EMAILS:
             return _share_link_auth_email_entry(request, fileshare, func, *args, **kwargs)
         
-        return func(request, fileshare, *args, **kwargs)
-
     return _decorated
 
 def share_link_login_required(func):
