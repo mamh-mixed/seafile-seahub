@@ -25,18 +25,18 @@ def _share_link_auth_email_entry(request, fileshare, func, *args, **kwargs):
         return func(request, fileshare, *args, **kwargs)
     
     if request.method == 'GET':
-        email = request.GET.get('email')
+        email = request.GET.get('email', '')
         return render(request, 'share/share_link_email_audit.html', {'email': email, 'token': fileshare.token})
     
     elif request.method == 'POST':
-        code = request.POST.get('code', '')
-        cache_key = normalize_cache_key(code, 'share_link_email_auth_', token=fileshare.token)
+        code_post = request.POST.get('code', '')
         email_post = request.POST.get('email', '')
-        email = cache.get(cache_key)
+        cache_key = normalize_cache_key(email_post, 'share_link_email_auth_', token=fileshare.token)
+        code = cache.get(cache_key)
         
         authed_details = json.loads(fileshare.authed_details)
-        if email == email_post and email in authed_details.get('authed_emails'):
-            request.session[session_key] = email
+        if code == code_post and email_post in authed_details.get('authed_emails'):
+            request.session[session_key] = email_post
             request.user.username = request.session.get(session_key)
             cache.delete(cache_key)
             return func(request, fileshare, *args, **kwargs)

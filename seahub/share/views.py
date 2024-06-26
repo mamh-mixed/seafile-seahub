@@ -586,8 +586,8 @@ def ajax_get_link_email_audit_code(request):
         }), status=400, content_type=content_type)
 
     code = gen_token(max_length=6)
-    cache_key = normalize_cache_key(code, 'share_link_email_auth_', token=fs.token)
-    cache.set(cache_key, email, 60 * 60)
+    cache_key = normalize_cache_key(email, 'share_link_email_auth_', token=fs.token)
+    cache.set(cache_key, code, 60 * 60)
 
     # send code to user via email
     subject = _("Verification code for visiting share links")
