@@ -662,6 +662,29 @@ a, a:hover { color: #ec8000; }
   padding-left: 0.25rem;
 }
 
+/* for minimized 'side nav' */
+.side-nav-con-minimized .nav {
+  margin: 0!important;
+}
+
+.side-nav-con-minimized .heading,
+.side-nav-con-minimized .nav-item#share-admin-nav,
+.side-nav-con-minimized .nav-item .nav-text,
+.side-nav-con-minimized .nav-item .toggle-icon,
+.side-nav-con-minimized .nav-item .sub-nav {
+  display: none!important;
+}
+
+.side-nav-minimize-toolbar {
+  height: 38px;
+  cursor: pointer;
+}
+
+.side-nav-minimize-toolbar:hover {
+  background: #f0f0f0;
+}
+/* minimized 'side nav' ends */
+
 .side-nav-footer {
   display:flex;
   flex-shrink:0;
