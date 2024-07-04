@@ -142,6 +142,7 @@ class PageItem extends Component {
         onUpdatePage={this.props.onUpdatePage}
         onDeletePage={this.props.onDeletePage}
         onMovePage={this.props.onMovePage}
+        updateWikiConfig={this.props.updateWikiConfig}
         pages={pages}
         pathStr={pathStr + '-' + page.id}
         currentPageId={this.props.currentPageId}
@@ -302,6 +303,7 @@ PageItem.propTypes = {
   addPageInside: PropTypes.func,
   getFoldState: PropTypes.func,
   toggleExpand: PropTypes.func,
+  updateWikiConfig: PropTypes.func,
 };
 
 export default PageItem;
