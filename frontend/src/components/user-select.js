@@ -26,6 +26,7 @@ class UserSelect extends React.Component {
     this.state = {
       searchValue: ''
     };
+    this.userSelect = React.createRef();
   }
 
   onInputChange = (searchValue) => {
@@ -75,7 +76,7 @@ class UserSelect extends React.Component {
   };
 
   clearSelect = () => {
-    this.refs.userSelect.onChange([], { action: 'clear' });
+    this.userSelect.current.onChange([], { action: 'clear' });
   };
 
   render() {
@@ -99,7 +100,7 @@ class UserSelect extends React.Component {
         placeholder={this.props.placeholder}
         className={`user-select ${this.props.className}`}
         value={this.props.value}
-        ref="userSelect"
+        ref={this.userSelect}
         styles={UserSelectStyle}
       />
     );
