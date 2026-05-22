@@ -75,6 +75,19 @@ class DirPath extends React.Component {
     return location.href.indexOf('?history=true') > -1;
   };
 
+  isChatMode = () => {
+    return location.href.indexOf('?chat=true') > -1;
+  };
+
+  turnChatPathToLink = () => {
+    return (
+      <>
+        <span className="path-split">/</span>
+        <span className="path-item path-item-read-only">{gettext('Chat')}</span>
+      </>
+    );
+  };
+
   onTabNavClick = (e, tabName, id) => {
     if (window.uploader &&
       window.uploader.isUploadProgressDialogShow &&
@@ -350,6 +363,10 @@ class DirPath extends React.Component {
       return this.turnHistoryPathToLink(pathList);
     }
 
+    if (this.isChatMode()) {
+      return this.turnChatPathToLink();
+    }
+
     let nodePath = '';
     let pathElem = pathList.map((item, index) => {
       if (item === '') return null;
@@ -405,6 +422,7 @@ class DirPath extends React.Component {
     const pathElem = this.turnPathToLink(currentPath);
     const isTrashMode = this.isTrashMode();
     const isHistoryMode = this.isHistoryMode();
+    const isChatMode = this.isChatMode();
     const tip = isTreePanelShown ? gettext('Close the panel') : gettext('Open the panel');
     return (
       <div className="path-container dir-view-path">
@@ -437,7 +455,7 @@ class DirPath extends React.Component {
             <span className="path-split">/</span>
           </>
         )}
-        {(!isHistoryMode && !isTrashMode && (currentPath === '/' || currentPath === '')) ?
+        {(!isHistoryMode && !isTrashMode && !isChatMode && (currentPath === '/' || currentPath === '')) ?
           <DirOperationToolbar
             path={this.props.currentPath}
             repoID={this.props.repoID}
