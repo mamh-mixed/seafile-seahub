@@ -45,10 +45,9 @@ from seahub.api2.endpoints.group_owned_libraries import GroupOwnedLibraries, \
         GroupOwnedLibraryTransferView
 from seahub.api2.endpoints.address_book.groups import AddressBookGroupsSubGroups
 from seahub.api2.endpoints.address_book.members import AddressBookGroupsSearchMember
-
+from seahub.group.views import group_invite
 from seahub.api2.endpoints.group_members import GroupMembers, GroupSearchMember, GroupMember, \
-        GroupMembersBulk, GroupMembersImport, GroupMembersImportExample, GroupInviteLinks, GroupInviteLink, \
-        group_invite
+        GroupMembersBulk, GroupMembersImport, GroupMembersImportExample, GroupInviteLinks, GroupInviteLink
 from seahub.api2.endpoints.search_group import SearchGroup
 from seahub.api2.endpoints.share_links import ShareLinks, ShareLink, \
         ShareLinkOnlineOfficeLock, ShareLinkDirents, ShareLinkSaveFileToRepo, \

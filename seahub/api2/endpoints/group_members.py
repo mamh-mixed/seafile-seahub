@@ -3,7 +3,7 @@ import logging
 from io import BytesIO
 from openpyxl import load_workbook
 
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.utils.translation import gettext as _
 
 from rest_framework.authentication import SessionAuthentication
@@ -27,7 +27,6 @@ from seahub.utils.error_msg import file_type_error_msg
 from seahub.base.accounts import User
 from seahub.base.models import GROUP_MEMBER_ADD, GROUP_MEMBER_DELETE
 from seahub.group.signals import add_user_to_group
-from seahub.group.views import group_invite
 from seahub.organizations.views import get_org_id_by_group
 from seahub.group.utils import is_group_member, is_group_admin, \
     is_group_owner, is_group_admin_or_owner, get_group_member_info
@@ -50,6 +49,12 @@ class GroupMembers(APIView):
         """
         Get all group members.
         """
+
+        is_admin = request.GET.get('is_admin')
+        if is_admin not in ('true', 'false'):
+            error_msg = 'is_admin invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         try:
             page = int(request.GET.get('page', '1'))
             per_page = int(request.GET.get('per_page', '100'))
@@ -74,10 +79,12 @@ class GroupMembers(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         group_members = []
-        is_admin = request.GET.get('is_admin', 'false')
         for m in members:
-            # only return group admins
+
             if is_admin == 'true' and not m.is_staff:
+                continue
+
+            if is_admin == 'false' and m.is_staff:
                 continue
 
             member_info = get_group_member_info(request, group_id, m.user_name)
@@ -254,11 +261,11 @@ class GroupMember(APIView):
                 seafile_api.remove_group_repos_by_owner(group_id, email)
                 # add group invite log
                 group_member_audit.send(sender=None,
-                                      org_id=org_id if org_id else -1,
-                                      group_id=group_id,
-                                      users=[email],
-                                      operator=username,
-                                      operation=GROUP_MEMBER_DELETE)
+                                        org_id=org_id if org_id else -1,
+                                        group_id=group_id,
+                                        users=[email],
+                                        operator=username,
+                                        operation=GROUP_MEMBER_DELETE)
                 return Response({'success': True})
             except SearpcError as e:
                 logger.error(e)
@@ -272,11 +279,11 @@ class GroupMember(APIView):
                 ccnet_api.group_remove_member(group_id, username, email)
                 seafile_api.remove_group_repos_by_owner(group_id, email)
                 group_member_audit.send(sender=None,
-                                      org_id=org_id if org_id else -1,
-                                      group_id=group_id,
-                                      users=[email],
-                                      operator=username,
-                                      operation=GROUP_MEMBER_DELETE)
+                                        org_id=org_id if org_id else -1,
+                                        group_id=group_id,
+                                        users=[email],
+                                        operator=username,
+                                        operation=GROUP_MEMBER_DELETE)
                 return Response({'success': True})
 
             elif is_group_admin(group_id, username):
@@ -285,11 +292,11 @@ class GroupMember(APIView):
                     ccnet_api.group_remove_member(group_id, username, email)
                     seafile_api.remove_group_repos_by_owner(group_id, email)
                     group_member_audit.send(sender=None,
-                                          org_id=org_id if org_id else -1,
-                                          group_id=group_id,
-                                          users=[email],
-                                          operator=username,
-                                          operation=GROUP_MEMBER_DELETE)
+                                            org_id=org_id if org_id else -1,
+                                            group_id=group_id,
+                                            users=[email],
+                                            operator=username,
+                                            operation=GROUP_MEMBER_DELETE)
                     return Response({'success': True})
                 else:
                     error_msg = 'Permission denied.'
@@ -398,11 +405,11 @@ class GroupMembersBulk(APIView):
                                    added_user=email)
         # add group invite log
         group_member_audit.send(sender=None,
-                              org_id=org_id if org_id else -1,
-                              group_id=group_id,
-                              users=emails_added,
-                              operator=username,
-                              operation=GROUP_MEMBER_ADD)
+                                org_id=org_id if org_id else -1,
+                                group_id=group_id,
+                                users=emails_added,
+                                operator=username,
+                                operation=GROUP_MEMBER_ADD)
         return Response(result)
 
 
@@ -557,12 +564,12 @@ class GroupMembersImport(APIView):
                                    added_user=email)
 
         group_member_audit.send(sender=None,
-                              org_id=org_id if org_id else -1,
-                              group_id=group_id,
-                              users=emails_added,
-                              operator=username,
-                              operation=GROUP_MEMBER_ADD)
-            
+                                org_id=org_id if org_id else -1,
+                                group_id=group_id,
+                                users=emails_added,
+                                operator=username,
+                                operation=GROUP_MEMBER_ADD)
+
         return Response(result)
 
 
@@ -577,7 +584,7 @@ class GroupMembersImportExample(APIView):
         for i in range(5):
             username = "test" + str(i) + "@example.com"
             data_list.append([username])
-            
+
         for i in range(5):
             login_id = "ID" + str(i)
             data_list.append([login_id])
