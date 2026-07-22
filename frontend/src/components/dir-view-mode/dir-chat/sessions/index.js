@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '../../../../utils/constants';
 import CenteredLoading from '../../../centered-loading';
@@ -15,7 +15,6 @@ const Sessions = ({ sessionId }) => {
     sessions,
     teamSessions,
     isTeamSessionsLoading,
-    hasLoadedTeamSessions,
     activeTab,
     setActiveTab,
     closeShowSessions,
@@ -24,11 +23,12 @@ const Sessions = ({ sessionId }) => {
   const tabsRef = useRef(null);
   const mineLabelRef = useRef(null);
   const teamLabelRef = useRef(null);
+  const hasRequestedTeamSessionsRef = useRef(false);
   const [indicatorStyle, setIndicatorStyle] = useState(null);
 
   const isTeamTab = activeTab === SESSION_TAB_TYPE.TEAM;
   const displaySessions = isTeamTab ? teamSessions : sessions;
-  const shouldShowLoading = isTeamTab && !hasLoadedTeamSessions ? true : isTeamSessionsLoading;
+  const shouldShowLoading = isTeamTab && !hasRequestedTeamSessionsRef.current ? true : isTeamSessionsLoading;
   const emptyTipProps = isTeamTab
     ? {
       title: gettext('No shared chats'),
@@ -64,11 +64,18 @@ const Sessions = ({ sessionId }) => {
     };
   }, [activeTab]);
 
-  useEffect(() => {
-    if (isTeamTab && !hasLoadedTeamSessions) {
+  const onSelectMineTab = () => {
+    setActiveTab(SESSION_TAB_TYPE.MINE);
+  };
+
+  const onSelectTeamTab = () => {
+    if (!hasRequestedTeamSessionsRef.current) {
+      hasRequestedTeamSessionsRef.current = true;
       loadTeamSessions();
     }
-  }, [hasLoadedTeamSessions, isTeamTab, loadTeamSessions]);
+
+    setActiveTab(SESSION_TAB_TYPE.TEAM);
+  };
 
   return (
     <div className="sea-ai-ask-sessions-wrapper" style={{ width: 280, marginLeft: 16 }}>
@@ -82,14 +89,14 @@ const Sessions = ({ sessionId }) => {
         <button
           type="button"
           className={`sea-ai-ask-sessions-tab ${activeTab === SESSION_TAB_TYPE.MINE ? 'active' : ''}`}
-          onClick={() => setActiveTab(SESSION_TAB_TYPE.MINE)}
+          onClick={onSelectMineTab}
         >
           <span className="sea-ai-ask-sessions-tab-label" ref={mineLabelRef}>{gettext('Mine')}</span>
         </button>
         <button
           type="button"
           className={`sea-ai-ask-sessions-tab ${activeTab === SESSION_TAB_TYPE.TEAM ? 'active' : ''}`}
-          onClick={() => setActiveTab(SESSION_TAB_TYPE.TEAM)}
+          onClick={onSelectTeamTab}
         >
           <span className="sea-ai-ask-sessions-tab-label" ref={teamLabelRef}>{gettext('Shared')}</span>
         </button>
