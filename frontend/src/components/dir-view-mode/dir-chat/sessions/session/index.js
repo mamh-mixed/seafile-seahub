@@ -32,7 +32,7 @@ const Session = ({ session, isSelected, isTeamTab = false }) => {
         className={classNames('sea-ai-ask-session-item', { active: isSelected })}
         onClick={() => togglePageSlugId(session._id)}
       >
-        <Icon symbol="group" className="mr-2" />
+        <Icon symbol="chat-team" className="mr-2" />
         <div className="sea-ai-ask-session-content">
           <div className="sea-ai-ask-session-name text-truncate" title={session.name}>{session.name}</div>
         </div>

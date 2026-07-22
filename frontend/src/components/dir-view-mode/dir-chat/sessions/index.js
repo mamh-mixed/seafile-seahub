@@ -15,6 +15,7 @@ const Sessions = ({ sessionId }) => {
     sessions,
     teamSessions,
     isTeamSessionsLoading,
+    hasLoadedTeamSessions,
     activeTab,
     setActiveTab,
     closeShowSessions,
@@ -27,6 +28,7 @@ const Sessions = ({ sessionId }) => {
 
   const isTeamTab = activeTab === SESSION_TAB_TYPE.TEAM;
   const displaySessions = isTeamTab ? teamSessions : sessions;
+  const shouldShowLoading = isTeamTab && !hasLoadedTeamSessions ? true : isTeamSessionsLoading;
   const emptyTipProps = isTeamTab
     ? {
       title: gettext('No shared chats'),
@@ -63,10 +65,10 @@ const Sessions = ({ sessionId }) => {
   }, [activeTab]);
 
   useEffect(() => {
-    if (isTeamTab) {
+    if (isTeamTab && !hasLoadedTeamSessions) {
       loadTeamSessions();
     }
-  }, [isTeamTab, loadTeamSessions]);
+  }, [hasLoadedTeamSessions, isTeamTab, loadTeamSessions]);
 
   return (
     <div className="sea-ai-ask-sessions-wrapper" style={{ width: 280, marginLeft: 16 }}>
@@ -98,13 +100,13 @@ const Sessions = ({ sessionId }) => {
         />
       </div>
       <div className="sea-ai-ask-sessions-body">
-        {isTeamSessionsLoading && (
+        {shouldShowLoading && (
           <CenteredLoading />
         )}
-        {!isTeamSessionsLoading && displaySessions.length === 0 && (
+        {!shouldShowLoading && displaySessions.length === 0 && (
           <EmptyTip className="sea-ai-ask-sessions-empty" {...emptyTipProps} />
         )}
-        {!isTeamSessionsLoading && displaySessions.map((session) => (
+        {!shouldShowLoading && displaySessions.map((session) => (
           <Session
             key={session._id}
             session={session}
